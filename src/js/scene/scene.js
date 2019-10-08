@@ -4,13 +4,23 @@ class Scene {
     constructor(canvas) {
         const self = this;
         this.canvas = canvas;
+
         this.board = canvas.getContext('2d');
+        this.board.imageSmoothingQuality = "High";
+        this.board.webkitImageSmoothingEnabled = true;
+        this.board.imageSmoothingEnabled = true;
+
         this.board2 = canvas2.getContext('2d');
+        this.board2.imageSmoothingQuality = "High";
+        this.board2.webkitImageSmoothingEnabled = true;
+        this.board2.imageSmoothingEnabled = true;
+
         this.shapesArr = [];
         this.mouseDown = false;
         this.currentX = -9999;
         this.currentY = -9999;
         this.strokeStyle = 'black';
+        this.lineWidth = 1;
 
         this.setLineDrawing = function(event) { return self.drawLine(event, self) };
         this.setCircleDrawing = function(event) { return self.drawCircle(event, self) };
@@ -24,8 +34,8 @@ class Scene {
             type: 's',
             coordinates: [],
             fillStyle: '',
-            strokeStyle: '',
-            lineWidth: 1
+            strokeStyle: this.strokeStyle,
+            lineWidth: this.lineWidth
         };
     }
 
@@ -57,7 +67,7 @@ class Scene {
     }
 
     drawLine(event, self) {
-        const board = canvas.getContext('2d');
+        const board = self.canvas.getContext('2d');
 
         const x = event.offsetX;
         const y = event.offsetY;
@@ -69,10 +79,12 @@ class Scene {
             self.paintObj.coordinates.push([x, y]);
         }
         else {
-            // board.moveTo(self.currentX, self.currentY);
+            // const [prev2x, prev2y] = self.paintObj.coordinates[self.paintObj.coordinates.length -2] || [self.currentX, self.currentY];
+            // board.bezierCurveTo(prev2x, prev2y, self.currentX, self.currentY, x, y);
+
             board.quadraticCurveTo(self.currentX, self.currentY, x, y);
             // ignore same coordinates. e.g. user holds the keypad down and does not move the cursor
-            if (x !== self.currentX && y !== self.currentY) {
+            if (x !== self.currentX || y !== self.currentY) {
                 self.paintObj.coordinates.push([x, y]);
             }
         }
@@ -80,30 +92,33 @@ class Scene {
         self.currentX = x;
         self.currentY = y;
 
-        board.lineWidth = 1;
-        board.closePath();
+        board.lineWidth = self.lineWidth;
         board.strokeStyle = self.strokeStyle;
+        board.closePath();
         board.stroke();
     }
 
     redrawLine(shapeObj) {
+
+        this.board2.beginPath();
+
+        this.board2.strokeStyle = shapeObj.strokeStyle;
+        this.board2.lineWidth = shapeObj.lineWidth;
+
         shapeObj.coordinates.forEach((coordinate, i, coordinates) => {
+
             if (i === 0) {
-                this.board.moveTo(...coordinate);
                 this.board2.moveTo(...coordinate);
             } else {
-                console.log(...coordinates[i - 1], ...coordinate);
-                this.board.quadraticCurveTo(...coordinates[i - 1], ...coordinate);
                 this.board2.quadraticCurveTo(...coordinates[i - 1], ...coordinate);
-                // this.board.lineTo(...coordinate);
             }
         });
-        this.board.stroke();
+
         this.board2.stroke();
     }
 
     drawCircle (event, self) {
-        const board = canvas.getContext('2d');
+        const board = self.canvas.getContext('2d');
 
         const x = event.offsetX;
         const y = event.offsetY;
@@ -120,7 +135,7 @@ class Scene {
             board.arc(x, y, distance, 0, 2 * Math.PI);
         }
 
-        board.lineWidth = 1;
+        board.lineWidth = self.lineWidth;
         board.closePath();
         board.strokeStyle = self.strokeStyle;
         board.stroke();
@@ -130,16 +145,13 @@ class Scene {
         const coords = shapeObj.coordinates;
         const distance = Math.sqrt(Math.pow(coords[1][0] - coords[0][0], 2) + Math.pow(coords[1][1] - coords[0][1], 2));
 
-        this.board.beginPath();
         this.board2.beginPath();
 
-        this.board.moveTo(coords[0][0], coords[0][1]);
-        this.board2.moveTo(coords[0][0], coords[0][1]);
+        this.board2.strokeStyle = shapeObj.strokeStyle;
+        this.board2.lineWidth = shapeObj.lineWidth;
 
-        this.board.arc(coords[1][0], coords[1][1], distance, 0, 2 * Math.PI);
         this.board2.arc(coords[1][0], coords[1][1], distance, 0, 2 * Math.PI);
 
-        this.board.stroke();
         this.board2.stroke();
     }
 
@@ -161,8 +173,8 @@ class Scene {
         }
 
         self.shapesArr.push(self.paintObj);
-        console.log('shapesArr.....', self.shapesArr);
-        this.redrawAll(self.shapesArr);
+        // this.redrawAll(self.shapesArr);
+        this.redrawByType(self.paintObj);
     }
 
     resize(event) {
@@ -195,6 +207,19 @@ class Scene {
                 this.redrawCircle(shape);
             }
         })
+    }
+
+    redrawByType(paintObj) {
+        if (paintObj.type === 'c') {
+            this.redrawCircle(paintObj);
+        } else if (paintObj.type === 'l') {
+            this.redrawLine(paintObj);
+        }
+    }
+
+    exportPng(canvas) {
+        var image = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+        window.location.href=image;
     }
 }
 

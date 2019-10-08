@@ -10,10 +10,10 @@
     <div class="header"></div>
     <div class="content">
         <div class="left">
-            <div class="button circle">C</div>
-            <div class="button square">S</div>
-            <div class="button triangle">T</div>
-            <div class="button line">L</div>
+            <div class="button"><span class="circle">Circle</span></div>
+            <div class="button"><span class="square">Square</span></div>
+            <div class="button"><span class="triangle">Triangle</span></div>
+            <div class="button"><span class="line">Line</span></div>
             <div class="button"></div>
             <div class="button"></div>
         </div>
@@ -22,12 +22,22 @@
             <canvas id="canvas"></canvas>
         </div>
         <div class="right">
+            <div class="button">
+                <label>Brush:</label><br>
+                <label for="thin">Thin</label>
+                <input id="thin" type="radio" name="strokeGroup" value="2"><br>
+                <label for="medium">Medium</label>
+                <input id="medium"  type="radio" name="strokeGroup" value="4"><br>
+                <label for="thick">Thick</label>
+                <input id="thick"  type="radio" name="strokeGroup" value="8">
+            </div>
             <div class="button"></div>
             <div class="button"></div>
             <div class="button"></div>
             <div class="button"></div>
-            <div class="button"></div>
-            <div class="button"></div>
+            <div class="button">
+                <button class="export-button">Export</button>
+            </div>
         </div>
     </div>
     <div class="footer">
